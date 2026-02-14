@@ -15,20 +15,11 @@ Use the **Edit Mode** toggle below to choose which parameter to adjust by clicki
 
 # --- Sidebar Configuration ---
 st.sidebar.header("Survey Parameters")
-
-st.sidebar.subheader("Calculation Settings")
 min_ab2 = st.sidebar.number_input("Min AB/2 (m)", value=1.0, min_value=0.1)
 max_ab2 = st.sidebar.number_input("Max AB/2 (m)", value=1000.0, min_value=10.0)
-num_points = st.sidebar.slider("Number of Calculating Points", 10, 100, 30)
+num_points = st.sidebar.slider("Number of Points", 10, 100, 30)
 
-st.sidebar.subheader("Plotting Limits")
-min_res = st.sidebar.number_input("Min Resistivity (Ohm-m)", value=1.0, min_value=0.1)
-max_res = st.sidebar.number_input("Max Resistivity (Ohm-m)", value=10000.0, min_value=1.0)
-
-st.sidebar.subheader("Field Data Settings")
-num_field_points = st.sidebar.number_input("Number of Field Data Points", value=21, min_value=5, max_value=100, step=1)
-
-# Generate AB/2 values for calculation (logarithmic spacing)
+# Generate AB/2 values (logarithmic spacing)
 ab2_values = np.logspace(np.log10(min_ab2), np.log10(max_ab2), num_points)
 
 # --- Main Layout ---
@@ -183,43 +174,6 @@ with col1:
         model_thick = thick_list[:-1] # Drop last
         model_res = res_list
 
-    st.divider()
-    st.subheader("Field Data")
-    st.markdown("Enter your observed data.")
-
-    # Initialize Field Data
-    # Check if we need to re-initialize based on Num Points change
-    if "last_num_field_points" not in st.session_state:
-        st.session_state.last_num_field_points = num_field_points
-
-    force_reset = False
-    if st.session_state.last_num_field_points != num_field_points:
-        force_reset = True
-        st.session_state.last_num_field_points = num_field_points
-
-    if "field_df" not in st.session_state or force_reset:
-        # Dynamic N points from 1 to 200 log spaced
-        field_ab2 = np.logspace(np.log10(1), np.log10(200), num_field_points)
-        field_rho = np.full(num_field_points, 250.0)
-        
-        st.session_state.field_df = pd.DataFrame({
-            "AB/2 (Spacing)": field_ab2,
-            "Resistivity (Ohm-m)": field_rho
-        })
-
-    # Display Field Data Editor
-    edited_field_df = st.data_editor(
-        st.session_state.field_df,
-        num_rows="dynamic",
-        key="field_editor",
-        use_container_width=True
-    )
-    
-    # Update Session State
-    if not edited_field_df.equals(st.session_state.field_df):
-        st.session_state.field_df = edited_field_df
-
-
 with col2:
     st.subheader("Combined Analysis")
     
@@ -298,18 +252,6 @@ with col2:
                         hoverinfo='x'
                     ))
 
-                # Field Data Trace (Green Points)
-                if "field_df" in st.session_state and not st.session_state.field_df.empty:
-                    field_plot_df = st.session_state.field_df.dropna()
-                    fig.add_trace(go.Scatter(
-                        x=field_plot_df["AB/2 (Spacing)"], 
-                        y=field_plot_df["Resistivity (Ohm-m)"],
-                        mode='markers',
-                        name='Field Data',
-                        marker=dict(color='green', size=8, symbol='circle'),
-                        hoverinfo='x+y'
-                    ))
-
                 # Sounding Curve
                 fig.add_trace(go.Scatter(
                     x=ab2_values, y=rho_a,
@@ -326,8 +268,7 @@ with col2:
                     xaxis_title="Spacing (AB/2) / Depth (m)",
                     yaxis_title="Resistivity (Ohm-m)",
                     xaxis=dict(type="log", range=[np.log10(min_x_grid), np.log10(max_x_grid)]),
-                    # Use Sidebar Min/Max Res
-                    yaxis=dict(type="log", range=[np.log10(min_res), np.log10(max_res)]),
+                    yaxis=dict(type="log", range=[np.log10(min_y_grid), np.log10(max_y_grid)]),
                     height=600, showlegend=True, template="plotly_white", dragmode='pan'
                 )
                 
