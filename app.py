@@ -10,7 +10,7 @@ st.set_page_config(page_title="1D Resistivity Forward Modeling", layout="wide")
 st.title("1D Resistivity Forward Modeling (Schlumberger Array)")
 st.markdown("""
 This app simulates the **Apparent Resistivity** curve for a 1D layered earth model.
-Use the **Edit Mode** toggle below to choose which parameter to adjust by clicking on the plot.
+Use the **Edit Mode** toggle below to choose which parameter to adjust by clicking on the plot. **(supervised by HSKim incorporating streamlit & antigravity)**
 """)
 
 # --- Sidebar Configuration ---
@@ -326,12 +326,22 @@ with col2:
                     xaxis_title="Spacing (AB/2) / Depth (m)",
                     yaxis_title="Resistivity (Ohm-m)",
                     xaxis=dict(type="log", range=[np.log10(min_x_grid), np.log10(max_x_grid)]),
-                    # Use Sidebar Min/Max Res
+                    # Use Sidebar Min/Max Res EXACTLY
                     yaxis=dict(type="log", range=[np.log10(min_res), np.log10(max_res)]),
-                    height=600, showlegend=True, template="plotly_white", dragmode='pan'
+                    width=1000,
+                    height=1000,
+                    showlegend=True,
+                    template="plotly_white",
+                    dragmode='pan'
                 )
                 
-                selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
+                # Use fixed width to ensure square aspect ratio
+                # Enable legend dragging via config
+                config = {
+                    'edits': {'legendPosition': True},
+                    'responsive': True
+                }
+                selection = st.plotly_chart(fig, use_container_width=False, config=config, on_select="rerun", selection_mode="points")
                 
                 # --- Interaction Logic ---
                 if selection and selection["selection"]["points"]:
