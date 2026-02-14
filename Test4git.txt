@@ -1,0 +1,6 @@
+다음과 같은 명령을 통해서 git이 github와 같이 연결되었으며, 이중 중간에 **** 표시된 토큰 부분은 별도의 Keep 메모를 참조해야 함
+>> git Init
+>> git add .
+>> git commit -m "Hi 1st"
+>> git remote add origin https://ghp_*********@github.com/geminihskim/MyAntiG.git
+>> git push --set-upstream origin master
